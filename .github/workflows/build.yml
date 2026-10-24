@@ -1,0 +1,104 @@
+name: Build Android and Windows
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: builds-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.44.0'
+
+jobs:
+  validate:
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Analyze Dart code
+        run: flutter analyze --fatal-infos
+      - name: Run unit and widget tests
+        run: flutter test
+
+  android:
+    name: Android APK
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Install dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Restore missing Gradle wrapper files
+        run: python3 tool/bootstrap_android.py
+      # This first-build APK uses the development key configured in android/app.
+      # Configure a stable private release key before publishing public updates.
+      - name: Build installable APK
+        run: flutter build apk --release
+      - name: Package APK
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk dist/photograph-android.apk
+          cd dist
+          sha256sum photograph-android.apk > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: photograph-android
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+  windows:
+    name: Windows desktop
+    needs: validate
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+      - name: Install dependencies
+        run: flutter pub get --enforce-lockfile
+      - name: Build Windows application
+        run: flutter build windows --release
+      - name: Package executable and runtime files
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath dist/photograph-windows-x64.zip
+          $hash = (Get-FileHash dist/photograph-windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  photograph-windows-x64.zip" | Set-Content -Encoding ascii dist/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: photograph-windows-x64
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
