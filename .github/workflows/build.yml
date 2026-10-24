@@ -27,6 +27,14 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
+      - name: Check OAuth build configuration
+        if: github.event_name != 'pull_request'
+        env:
+          DRIVE_CLIENT_ID: ${{ secrets.DRIVE_CLIENT_ID }}
+          DRIVE_CLIENT_SECRET: ${{ secrets.DRIVE_CLIENT_SECRET }}
+        run: python tool/write_drive_defines.py
+      - name: Test build configuration checks
+        run: python -m unittest discover -s tool -p '*test.py'
       - name: Install dependencies
         run: flutter pub get --enforce-lockfile
       - name: Analyze Dart code

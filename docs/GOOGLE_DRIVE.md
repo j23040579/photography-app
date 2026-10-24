@@ -20,3 +20,9 @@ For cloud builds configure **Settings → Secrets and variables → Actions → 
 The workflow reads those secrets into an ignored file during each build and passes it to Flutter. No values are logged or committed. Builds stop with a clear error if either secret is absent, instead of shipping a disabled Drive feature.
 
 Unit tests cover account-selection parameters, cancellation, reset of cross-account backup targets, and waiting for in-flight uploads. Real Google consent and uploads require an interactive device check; automated tests use fake accounts/storage and do not access personal Drive files.
+
+## Google reports `401 invalid_client`
+
+"The OAuth client was not found" means Google did not recognize the client identifier sent by the build. In Google Cloud Console, open **Google Auth Platform → Clients** and confirm the intended **Desktop app** client still exists. Use its OAuth **Client ID**, not the project ID or client secret. Update the two GitHub Actions secrets from the same client, then rerun the cloud build and install the newly generated application. Changing repository secrets cannot update binaries already downloaded.
+
+Build validation rejects malformed client IDs and pasted JSON/quotes, trims accidental edge whitespace, and prints only a short SHA-256 Client ID fingerprint for comparing configurations. A syntactically valid identifier can still refer to a deleted or incorrect Google client; build validation does not prove registration or consent approval. Publishing status **In production** does not create or repair OAuth clients.

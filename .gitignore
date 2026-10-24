@@ -15,3 +15,5 @@ dist/
 drive_keys.json
 drive_auth.json
 android/.kotlin/
+
+__pycache__/
