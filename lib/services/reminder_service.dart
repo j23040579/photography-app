@@ -16,15 +16,25 @@ class ReminderService {
   bool available = false;
   String status = 'Reminders have not been initialized.';
 
+  /// The real exception text from the last failed initialize(), for debugging.
+  String? lastError;
+
   Future<void> initialize() async {
     if (!Platform.isAndroid && !Platform.isWindows) {
       status = 'Native reminders are available on Android and Windows.';
       return;
     }
+    // Timezone lookup is best-effort. scheduleAlbum() converts an absolute
+    // instant with TZDateTime.from, so a one-shot reminder fires at the right
+    // moment even if tz.local falls back to UTC.
     try {
       tz_data.initializeTimeZones();
       final zone = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(zone.identifier));
+    } catch (e) {
+      lastError = 'timezone: $e';
+    }
+    try {
       final initialized = await _plugin.initialize(
         settings: const InitializationSettings(
           android: AndroidInitializationSettings('notification_icon'),
@@ -39,10 +49,12 @@ class ReminderService {
       status = available
           ? 'Reminders use your device’s local time.'
           : 'Your device could not enable notifications.';
-    } catch (_) {
+    } catch (e) {
       available = false;
+      lastError = 'plugin: $e';
       status =
-          'Notifications are unavailable. Check system notification settings.';
+          'Notifications are unavailable. Check system notification settings.'
+          ' ($e)';
     }
   }
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 
 import '../domain/models.dart';
@@ -95,6 +96,61 @@ class _MemoryViewerState extends State<MemoryViewer>
       unawaited(video.dispose());
     }
     super.dispose();
+  }
+
+  /// Opens the system share sheet (WhatsApp, Messages, email, etc.) with a
+  /// copy of the file. Only the media is shared; the private caption is not.
+  Future<void> _share() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final file = File(widget.memory.path);
+    try {
+      if (!await file.exists()) {
+        messenger.showSnackBar(
+          const SnackBar(content: Text('This file is no longer available.')),
+        );
+        return;
+      }
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path, mimeType: _mimeType())]),
+      );
+    } catch (_) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Sharing is not available on this device right now.'),
+        ),
+      );
+    }
+  }
+
+  String? _mimeType() {
+    final path = widget.memory.path.toLowerCase();
+    final dot = path.lastIndexOf('.');
+    switch (dot < 0 ? '' : path.substring(dot + 1)) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      case 'gif':
+        return 'image/gif';
+      case 'bmp':
+        return 'image/bmp';
+      case 'mp4':
+      case 'm4v':
+        return 'video/mp4';
+      case 'mov':
+        return 'video/quicktime';
+      case 'webm':
+        return 'video/webm';
+      case 'mkv':
+        return 'video/x-matroska';
+      case 'avi':
+        return 'video/x-msvideo';
+      default:
+        return null;
+    }
   }
 
   String _duration(Duration value) {
@@ -203,6 +259,13 @@ class _MemoryViewerState extends State<MemoryViewer>
     return Scaffold(
       appBar: AppBar(
         title: Text(memory.isVideo ? 'Video memory' : 'Photo memory'),
+        actions: [
+          IconButton(
+            tooltip: 'Share',
+            icon: const Icon(Icons.share_outlined),
+            onPressed: _share,
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(

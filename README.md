@@ -13,6 +13,10 @@ A Flutter photo journal for Android and Windows. Create an album, choose an occa
 - Native one-shot reminders at a chosen local date/time, for the album or a specific photo idea. One active reminder per album; setting another replaces it. Notifications require OS permission and can be delayed by battery/Focus settings. The reminder text is a snapshot of the idea when scheduled.
 - A responsive cream, burgundy, and sage interface using #6D0808, #2D0000, #757D6F, and #EEEAD7.
 
+## Google Drive and sharing
+
+Optional Google Drive backup, folder selection, and album sharing cards are included. Click the Drive icon, then **Change Google Drive account** to open Google's account chooser. Successful switches leave backup off until you select a save location for the new account. Local memories and previous Drive copies are preserved. See [Google Drive setup](docs/GOOGLE_DRIVE.md) for private build configuration and cloud build secrets.
+
 ## Offline machine learning
 
 The app uses an on-device **online logistic preference model**, implemented in Dart. A like is positive feedback; a shuffle is negative feedback. Gradient updates learn weights for category, subject, and composition style. Scores plus randomized exploration rank the candidates. Model weights and novelty history persist with the journal, and work without any network request or model download.
@@ -21,7 +25,7 @@ This is a lightweight machine-learning recommender, **not a neural text generato
 
 ## Privacy and storage
 
-“Add” imports an app-owned copy into the local application support directory. There is no cloud upload, account, public feed, cross-device sync, or server. Comments are private journal captions. Original imported files are never deleted by the app. A rotating local JSON backup protects the previous saved journal generation, with media cleanup deferred while that backup references it. This backup is on the same device, not disaster recovery. Uninstalling the app or losing the device can lose the journal; keep your original media separately.
+“Add” imports an app-owned copy into the local application support directory. Google Drive sign-in is optional; enabling backup sends journal/media copies to the selected Drive account. There is no public feed or app backend server. Comments are private journal captions. Original imported files are never deleted by the app. A rotating local JSON backup protects the previous saved journal generation, with media cleanup deferred while that backup references it. This backup is on the same device, not disaster recovery. Uninstalling the app or losing the device can lose the journal; keep your original media separately.
 
 Camera permission is requested for capture. Android's system picker grants access only to selected files; no broad storage permission is needed. Reminders use the OS scheduler, not a Dart timer that requires the app to stay open.
 

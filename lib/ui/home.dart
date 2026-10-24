@@ -8,11 +8,20 @@ import 'album_detail.dart';
 import 'create_album.dart';
 import 'onboarding.dart';
 import 'theme.dart';
+import '../services/drive_backup_service.dart';
+import 'drive_backup_card.dart';
+import 'drive_button.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.store, required this.reminders});
+  const HomeScreen({
+    super.key,
+    required this.store,
+    required this.reminders,
+    required this.backup,
+  });
   final AppStore store;
   final ReminderService reminders;
+  final DriveBackupService? backup;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -140,28 +149,56 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               Expanded(
-                child: ListenableBuilder(
-                  listenable: widget.store,
-                  builder: (context, _) => CustomScrollView(
-                    slivers: [
-                      SliverPadding(
+                child: Column(
+                  children: [
+                    if (widget.backup != null)
+                      Padding(
                         padding: EdgeInsets.fromLTRB(
-                          desktop ? 44 : 20,
-                          desktop ? 36 : 20,
-                          desktop ? 44 : 20,
-                          110,
+                          desktop ? 44 : 12,
+                          desktop ? 14 : 4,
+                          desktop ? 44 : 12,
+                          0,
                         ),
-                        sliver: SliverToBoxAdapter(
-                          child: Center(
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 1140),
-                              child: page == 2 ? guide() : journal(desktop),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 1140),
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: DriveTopButton(service: widget.backup!),
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    Expanded(
+                      child: ListenableBuilder(
+                        listenable: widget.store,
+                        builder: (context, _) => CustomScrollView(
+                          slivers: [
+                            SliverPadding(
+                              padding: EdgeInsets.fromLTRB(
+                                desktop ? 44 : 20,
+                                desktop ? 36 : 20,
+                                desktop ? 44 : 20,
+                                110,
+                              ),
+                              sliver: SliverToBoxAdapter(
+                                child: Center(
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 1140,
+                                    ),
+                                    child: page == 2
+                                        ? guide()
+                                        : journal(desktop),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -633,6 +670,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+      if (widget.backup != null) ...[
+        const SizedBox(height: 4),
+        DriveBackupCard(service: widget.backup!),
+      ],
       const SizedBox(height: 14),
       OutlinedButton.icon(
         onPressed: () => Navigator.of(context).push(

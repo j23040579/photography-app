@@ -56,8 +56,13 @@ jobs:
         run: python3 tool/bootstrap_android.py
       # This first-build APK uses the development key configured in android/app.
       # Configure a stable private release key before publishing public updates.
+      - name: Prepare private Google Drive build settings
+        env:
+          DRIVE_CLIENT_ID: ${{ secrets.DRIVE_CLIENT_ID }}
+          DRIVE_CLIENT_SECRET: ${{ secrets.DRIVE_CLIENT_SECRET }}
+        run: python tool/write_drive_defines.py
       - name: Build installable APK
-        run: flutter build apk --release
+        run: flutter build apk --release --dart-define-from-file=.dart_tool/drive_build.json
       - name: Package APK
         run: |
           mkdir -p dist
@@ -87,8 +92,13 @@ jobs:
         run: flutter config --enable-windows-desktop
       - name: Install dependencies
         run: flutter pub get --enforce-lockfile
+      - name: Prepare private Google Drive build settings
+        env:
+          DRIVE_CLIENT_ID: ${{ secrets.DRIVE_CLIENT_ID }}
+          DRIVE_CLIENT_SECRET: ${{ secrets.DRIVE_CLIENT_SECRET }}
+        run: python tool/write_drive_defines.py
       - name: Build Windows application
-        run: flutter build windows --release
+        run: flutter build windows --release --dart-define-from-file=.dart_tool/drive_build.json
       - name: Package executable and runtime files
         shell: pwsh
         run: |

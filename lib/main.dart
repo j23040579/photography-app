@@ -4,6 +4,7 @@ import 'services/reminder_service.dart';
 import 'ui/home.dart';
 import 'ui/onboarding.dart';
 import 'ui/theme.dart';
+import 'services/drive_backup_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,7 +12,13 @@ Future<void> main() async {
   await store.tryLoad();
   final reminders = ReminderService();
   await reminders.initialize();
-  runApp(PhotographApp(store: store, reminders: reminders));
+  DriveBackupService? backup;
+  try {
+    backup = await DriveBackupService.start(store);
+  } catch (_) {
+    backup = null; // the app still works without backup
+  }
+  runApp(PhotographApp(store: store, reminders: reminders, backup: backup));
 }
 
 class PhotographApp extends StatelessWidget {
@@ -19,9 +26,11 @@ class PhotographApp extends StatelessWidget {
     super.key,
     required this.store,
     required this.reminders,
+    this.backup,
   });
   final AppStore store;
   final ReminderService reminders;
+  final DriveBackupService? backup;
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: "Jett's Archive",
@@ -67,7 +76,7 @@ class PhotographApp extends StatelessWidget {
           );
         }
         return store.onboardingComplete
-            ? HomeScreen(store: store, reminders: reminders)
+            ? HomeScreen(store: store, reminders: reminders, backup: backup)
             : Onboarding(onFinish: store.finishOnboarding);
       },
     ),

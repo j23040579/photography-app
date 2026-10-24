@@ -10,3 +10,8 @@ android/key.properties
 *.jks
 *.keystore
 dist/
+
+# Local OAuth build configuration and generated caches
+drive_keys.json
+drive_auth.json
+android/.kotlin/

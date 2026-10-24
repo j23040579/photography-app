@@ -7,6 +7,7 @@ import '../services/reminder_service.dart';
 import 'camera_screen.dart';
 import 'memory_viewer.dart';
 import 'theme.dart';
+import 'album_card.dart';
 
 class AlbumDetail extends StatefulWidget {
   const AlbumDetail({
@@ -235,6 +236,11 @@ class _AlbumDetailState extends State<AlbumDetail> {
         style: TextStyle(fontFamily: 'Georgia'),
       ),
       actions: [
+        IconButton(
+          tooltip: 'Share album card',
+          icon: const Icon(Icons.share_outlined),
+          onPressed: busy ? null : () => showAlbumCardDialog(context, album),
+        ),
         PopupMenuButton<String>(
           enabled: !busy,
           onSelected: (value) => act(() async {
