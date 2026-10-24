@@ -52,7 +52,7 @@ class _OnboardingState extends State<Onboarding> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'photo graph',
+                        "Jett's Archive",
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ),

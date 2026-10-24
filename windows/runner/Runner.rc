@@ -90,11 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.photograph" "\0"
-            VALUE "FileDescription", "photograph" "\0"
+            VALUE "FileDescription", "Jett's Archive" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "photograph" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.photograph. All rights reserved." "\0"
             VALUE "OriginalFilename", "photograph.exe" "\0"
+            // Keep this storage identity stable: path_provider uses ProductName.
             VALUE "ProductName", "photograph" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END

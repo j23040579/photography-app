@@ -230,7 +230,10 @@ class _AlbumDetailState extends State<AlbumDetail> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('photo graph', style: TextStyle(fontFamily: 'Georgia')),
+      title: const Text(
+        "Jett's Archive",
+        style: TextStyle(fontFamily: 'Georgia'),
+      ),
       actions: [
         PopupMenuButton<String>(
           enabled: !busy,

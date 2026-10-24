@@ -29,7 +29,7 @@ class ReminderService {
         settings: const InitializationSettings(
           android: AndroidInitializationSettings('notification_icon'),
           windows: WindowsInitializationSettings(
-            appName: 'Photo Graph',
+            appName: "Jett's Archive",
             appUserModelId: 'PhotoGraph.PhotographyApp',
             guid: 'fbdce6e7-b563-41cb-bf76-32ecf29b4c19',
           ),
@@ -69,7 +69,7 @@ class ReminderService {
           : await android?.areNotificationsEnabled();
       if (allowed == false) {
         throw StateError(
-          'Allow Photo Graph notifications in Android settings to set a reminder.',
+          "Allow Jett's Archive notifications in Android settings to set a reminder.",
         );
       }
     }

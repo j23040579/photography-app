@@ -24,7 +24,7 @@ class PhotographApp extends StatelessWidget {
   final ReminderService reminders;
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'photo graph',
+    title: "Jett's Archive",
     debugShowCheckedModeBanner: false,
     theme: photographTheme(),
     home: ListenableBuilder(

@@ -1,4 +1,4 @@
-# photo graph
+# Jett's Archive
 
 A Flutter photo journal for Android and Windows. Create an album, choose an occasion, get photo ideas, and keep the moments with photos, videos, comments, notes, and a rating.
 

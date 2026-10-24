@@ -1,4 +1,4 @@
-# Building and installing Photograph
+# Building and installing Jett's Archive
 
 The project targets Android and Windows from one Flutter codebase. It stores albums and media on the device. Windows application builds require Windows with Visual Studio's **Desktop development with C++** workload; a Linux Flutter SDK cannot produce a Windows executable.
 

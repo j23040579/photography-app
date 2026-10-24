@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'photo graph',
+                          "Jett's Archive",
                           style: Theme.of(context).textTheme.headlineMedium,
                         ),
                         const SizedBox(height: 4),
