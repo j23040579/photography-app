@@ -6,6 +6,42 @@ from pathlib import Path
 import re
 
 
+def normalize_secret(raw, client_id):
+    value = raw.strip()
+    try:
+        if value.startswith('{'):
+            value = json.loads(value)
+        elif value.startswith('"'):
+            try:
+                value = json.loads(value.rstrip(','))
+            except json.JSONDecodeError:
+                # Accept a copied JSON field line, including its trailing comma.
+                value = json.loads('{' + value.rstrip(',') + '}')
+        elif value.startswith("'") and value.endswith("'"):
+            value = value[1:-1]
+        if isinstance(value, dict):
+            containers = [value[key] for key in ('installed', 'web') if key in value]
+            if len(containers) > 1:
+                raise ValueError('ambiguous credential document')
+            if containers:
+                value = containers[0]
+            if not isinstance(value, dict):
+                raise ValueError('invalid credential document')
+            recorded_id = value.get('client_id', value.get('DRIVE_CLIENT_ID'))
+            if recorded_id is not None and recorded_id.strip() != client_id:
+                raise ValueError('client mismatch')
+            value = value.get('client_secret', value.get('DRIVE_CLIENT_SECRET'))
+        if not isinstance(value, str) or not re.fullmatch(r'[A-Za-z0-9_.+=/-]+', value.strip()):
+            raise ValueError('invalid secret value')
+        return value.strip()
+    except (ValueError, TypeError, AttributeError):
+        raise ValueError(
+            'DRIVE_CLIENT_SECRET must contain the secret value, a quoted value, '
+            'or a Google credential JSON document for the same OAuth client. '
+            'Check that both repository secrets belong to the same Desktop app client.'
+        ) from None
+
+
 def build_settings(environ):
     names = ("DRIVE_CLIENT_ID", "DRIVE_CLIENT_SECRET")
     values = {name: environ.get(name, "").strip() for name in names}
@@ -19,8 +55,7 @@ def build_settings(environ):
             "Clients > your Desktop app client. Do not paste JSON, a project "
             "ID, a client secret, quotes, or DRIVE_CLIENT_ID= into this secret."
         )
-    if values["DRIVE_CLIENT_SECRET"].startswith(('{', '"', "'")):
-        raise ValueError("DRIVE_CLIENT_SECRET must contain only its value, without JSON or quotes.")
+    values["DRIVE_CLIENT_SECRET"] = normalize_secret(values["DRIVE_CLIENT_SECRET"], values["DRIVE_CLIENT_ID"])
     return values
 
 
@@ -30,9 +65,9 @@ def main():
     except ValueError as error:
         print("::error title=Google OAuth configuration::" + str(error))
         raise SystemExit(1) from None
-    trimmed = [name for name in values if os.environ.get(name, "") != values[name]]
-    if trimmed:
-        print("::notice title=OAuth whitespace::Trimmed pasted edge whitespace: " + ", ".join(trimmed))
+    normalized = [name for name in values if os.environ.get(name, "") != values[name]]
+    if normalized:
+        print("::notice title=OAuth configuration normalization::Normalized private settings: " + ", ".join(normalized))
     # A fingerprint lets us compare builds with the supplied client without
     # publishing the actual configuration or the client secret.
     fingerprint = hashlib.sha256(values["DRIVE_CLIENT_ID"].encode()).hexdigest()[:12]
