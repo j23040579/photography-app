@@ -28,14 +28,15 @@ def main():
     try:
         values = build_settings(os.environ)
     except ValueError as error:
-        raise SystemExit(str(error)) from None
+        print("::error title=Google OAuth configuration::" + str(error))
+        raise SystemExit(1) from None
     trimmed = [name for name in values if os.environ.get(name, "") != values[name]]
     if trimmed:
-        print("Trimmed pasted edge whitespace: " + ", ".join(trimmed))
+        print("::notice title=OAuth whitespace::Trimmed pasted edge whitespace: " + ", ".join(trimmed))
     # A fingerprint lets us compare builds with the supplied client without
     # publishing the actual configuration or the client secret.
     fingerprint = hashlib.sha256(values["DRIVE_CLIENT_ID"].encode()).hexdigest()[:12]
-    print("OAuth Client ID fingerprint (SHA-256/12): " + fingerprint)
+    print("::notice title=Google OAuth Client ID::Client ID fingerprint (SHA-256/12): " + fingerprint)
     output = Path(".dart_tool/drive_build.json")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(values), encoding="utf-8")
